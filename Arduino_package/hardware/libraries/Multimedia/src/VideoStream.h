@@ -13,6 +13,7 @@ extern "C" {
 
 #define DEFAULT_PRESET         -1
 #define USB_UVCD_STREAM_PRESET 10
+#define RAW_STREAM_PRESET      20
 
 #define VIDEO_ENABLE  1
 #define VIDEO_DISABLE 0
@@ -77,16 +78,19 @@ enum encode_type {
 #define VIDEO_WVGA_HEIGHT 360
 
 // define video frame rate
-#define CAM_FPS    30
-#define CAM_NN_FPS 10
+#define CAM_FPS     30
+#define CAM_NN_FPS  10
+#define CAM_RAW_FPS 2
 
 // define video group of pictures
-#define CAM_GOP    30
-#define CAM_NN_GOP 10
+#define CAM_GOP     30
+#define CAM_NN_GOP  10
+#define CAM_RAW_GOP 80
 
 // define default video bit rate
-#define CAM_BPS    4 * 1024 * 1024
-#define CAM_NN_BPS 1 * 1024 * 1024
+#define CAM_BPS     4 * 1024 * 1024
+#define CAM_NN_BPS  1 * 1024 * 1024
+#define CAM_RAW_BPS 1 * 1024 * 1024
 
 // define video rate control
 #define CAM_RCMODE 2    // 1: CBR, 2: VBR
@@ -113,6 +117,9 @@ enum encode_type {
 #define REDBALANCE_MAX   2047
 #define BLUEBALANCE_MIN  256
 #define BLUEBALANCE_MAX  2047
+
+#define SCALE_DOWN_MODE 0
+#define SCALE_UP_MODE   1
 
 class MMFModule {
     friend class StreamIO;
@@ -163,6 +170,8 @@ public:
     void getGrayMode(void);
     void setDayNightMode(int enable);
     void getDayNightMode(void);
+    void set3DNR(int enable);
+    void get3DNR(void);
     void setMinFPS(int value);
     void getMinFPS(void);
 
@@ -186,7 +195,10 @@ public:
     void setRCParams(uint32_t minQp, uint32_t maxQp);
 
     void enableWebsocketViewer(void);
+    void enableROI(int width, int height);
 
+    void setWidth(int width);
+    void setHeight(int height);
     uint16_t width(void);
     uint16_t height(void);
     uint16_t fps(void);
@@ -237,6 +249,14 @@ public:
     int cameraOpenStatus(void);
     void updateVideoParams(int ch);
 
+    int getSensorWidth(void);
+    int getSensorHeight(void);
+
+    void setDynScaleDown(int ch);
+    void setDynScaleUp(int ch);
+    void crop_info_update(isp_crop_t* crop_info, int start_x, int start_y, int width, int height);
+    void setROI(int ch, isp_crop_t* crop_info);
+    void getROIStat(int ch, int use_roi);
 private:
     void setSnapshotCallback(int ch);
     static int snapshotCB0(uint32_t jpeg_addr, uint32_t jpeg_len);

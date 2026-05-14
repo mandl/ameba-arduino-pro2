@@ -27,6 +27,7 @@
 #include "binary.h"
 
 #include "amb_ard_printf.h"
+#include "amb_ard_user_sensor_list.h"
 
 // #define Arduino_STD_PRINTF
 #ifdef Arduino_STD_PRINTF
@@ -89,7 +90,7 @@ extern void set_video_logging(int enable);
 extern void set_module_video_logging(int enable);
 extern void set_osd_log(int enable);
 
-#if defined(Arduino_SHOW_NN_OSD_LOGS) || defined(Arduino_SHOW_VIDEO_OSD_LOGS)
+#if defined(Arduino_SHOW_NN_OSD_LOGS) || defined(Arduino_SHOW_VIDEO_OSD_LOGS) || defined(Arduino_SHOW_ALL_LOGS)
 #define INIT_OSD_LOGGING() set_osd_log(1);
 #else
 #define INIT_OSD_LOGGING() set_osd_log(0);
@@ -137,8 +138,6 @@ extern void loop(void);
 #define PIO_UART     (1UL << 8)
 #define PIO_SPI      (1UL << 9)
 
-// #define TYPE_ANALOG  (1UL<<7)
-// #define TYPE_DIGITAL (1UL<<8)
 #define TYPE_ANALOG  (1UL << 21)
 #define TYPE_DIGITAL (1UL << 22)
 

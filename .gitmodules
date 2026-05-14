@@ -1,6 +1,6 @@
-[submodule ".github/Coding_Style"]
-	path = .github/Coding_Style
-	url = https://github.com/M-ichae-l/Coding_Style
-[submodule ".github/Scripts/Python/python_script_public"]
-	path = .github/Scripts/Python/python_script_public
-	url = https://github.com/M-ichae-l/python_script_public
+[submodule "Arduino_zip_libraries/src/Ameba_JPEGDecoder"]
+	path = Arduino_zip_libraries/src/Ameba_JPEGDecoder
+	url = https://github.com/Bodmer/JPEGDecoder.git
+[submodule "Arduino_zip_libraries/src/Ameba_ArduCAM_Arduino"]
+	path = Arduino_zip_libraries/src/Ameba_ArduCAM_Arduino
+	url = https://github.com/ArduCAM/Arduino.git

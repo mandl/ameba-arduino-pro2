@@ -1,10 +1,11 @@
 Feature:
-- Add Proof of Concept Examples
+- Add AMB82-zero
 
 API Updates:
-- Add API to Update Video Stream Params and Proof of Concept
+- Update WDT API
+- Update codebase for ATcmd
 
 Misc:
-- Update AmebaEink readme
-- Add src for zip libs
-- Add workflow of Auto-update Arduino ZIP libraries
+- Add Arduino ZIP library submodules: JPEGDecoder and ArduCAM
+    - Add zip files
+- Update auto_zip_lib.yml

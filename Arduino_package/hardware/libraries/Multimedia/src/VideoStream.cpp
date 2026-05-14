@@ -362,6 +362,30 @@ void CameraSetting::getDayNightMode(void)
     }
 }
 
+void CameraSetting::set3DNR(int enable)
+{
+    isp_set_tnr(enable);
+    if (enable == 1) {
+        amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] 3DNR Enabled\n");
+    } else if (enable == 0) {
+        amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] 3DNR Disabled\n");
+    } else {
+        amb_ard_printf(ARD_LOG_ERR, "\r\n[ERROR] Invalid Input.\n");
+    }
+}
+
+void CameraSetting::get3DNR(void)
+{
+    isp_get_tnr(&ret);
+    if (ret == 0) {
+        amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] 3DNR Disabled\n");
+    } else if (ret == 1) {
+        amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] 3DNR Enabled\n");
+    } else {
+        amb_ard_printf(ARD_LOG_ERR, "\r\n[ERROR] Invalid\n");
+    }
+}
+
 void CameraSetting::setMinFPS(int value)
 {
     if (value >= 1 && value <= 30) {
@@ -426,6 +450,19 @@ VideoSetting::VideoSetting(uint8_t preset)
             _rc_mode = 1;
             _use_static_addr = 1;
             _meta_enable = 1;
+            _snapshot = 0;
+            break;
+        }
+        case 20: {
+            _resolution = VIDEO_FHD;
+            // _w = VIDEO_FHD_WIDTH;
+            // _h = VIDEO_FHD_HEIGHT;
+            _fps = CAM_RAW_FPS;
+            _bps = CAM_RAW_BPS;
+            _encoder = VIDEO_NV16;
+            _gop = CAM_RAW_GOP;
+            _rc_mode = 1;
+            _use_static_addr = 1;
             _snapshot = 0;
             break;
         }
@@ -617,6 +654,16 @@ void VideoSetting::setRotation(int angle)
     _rotation = angle;
 }
 
+void VideoSetting::setWidth(int width)
+{
+    _w = width;
+}
+
+void VideoSetting::setHeight(int height)
+{
+    _h = height;
+}
+
 uint16_t VideoSetting::width(void)
 {
     return _w;
@@ -630,6 +677,11 @@ uint16_t VideoSetting::height(void)
 uint16_t VideoSetting::fps(void)
 {
     return _fps;
+}
+
+void VideoSetting::enableROI(int width, int height)
+{
+    setROI(width, height);
 }
 
 void Video::configVideoChannel(int ch, VideoSetting& config)
@@ -650,6 +702,12 @@ void Video::configVideoChannel(int ch, VideoSetting& config)
         rc_mode[ch] = config._rc_mode;
         use_static_addr[ch] = config._use_static_addr;
         meta_enable[ch] = config._meta_enable;
+    } else if (config._preset == RAW_STREAM_PRESET) {
+        gop[ch] = config._gop;
+        rc_mode[ch] = config._rc_mode;
+        use_static_addr[ch] = config._use_static_addr;
+        w[ch] = getSensorWidth();
+        h[ch] = getSensorHeight();
     } else {
         jpeg_qlevel[ch] = config._jpeg_qlevel;
         video_rotation[ch] = config._rotation;
@@ -667,10 +725,10 @@ void Video::configVideoChannel(int ch, VideoSetting& config)
     //     bps[ch] = 0;
     // }
 
-    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] V1 %d    %d    %d    %d    %d    %d\n", channelEnable[0], w[0], h[0], bps[0], snapshot[0], fps[0]);
-    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] V2 %d    %d    %d    %d    %d    %d\n", channelEnable[1], w[1], h[1], bps[1], snapshot[1], fps[1]);
-    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] V3 %d    %d    %d    %d    %d    %d\n", channelEnable[2], w[2], h[2], bps[2], snapshot[2], fps[2]);
-    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] V4 %d    %d    %d    %d    %d    %d\n", channelEnable[3], w[3], h[3]);
+    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] V1 %d    %d    %d    %d    %d    %d\n", channelEnable[0], w[0], h[0], bps[0], snapshot[0][0], fps[0]);
+    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] V2 %d    %d    %d    %d    %d    %d\n", channelEnable[1], w[1], h[1], bps[1], snapshot[1][0], fps[1]);
+    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] V3 %d    %d    %d    %d    %d    %d\n", channelEnable[2], w[2], h[2], bps[2], snapshot[2][0], fps[2]);
+    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] V4 %d    %d    %d    %d    %d    %d\n", channelEnable[3], w[3], h[3], bps[3], snapshot[3][0], fps[3]);
 }
 
 #if 0
@@ -771,7 +829,34 @@ void Video::videoInit(int ch)
                              CAM_NN_GOP,
                              0);    // direct output flag
             } else {
-                if (preset[ch] != USB_UVCD_STREAM_PRESET) {
+                if (preset[ch] == USB_UVCD_STREAM_PRESET) {
+                    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] %s cameraOpenUVCD \n", __FUNCTION__);
+                    cameraOpenUVCD(videoModule[ch]._p_mmf_context,
+                                   channel[ch],
+                                   encoder[ch],
+                                   resolution[ch],
+                                   w[ch],
+                                   h[ch],
+                                   bps[ch],
+                                   fps[ch],
+                                   gop[ch],
+                                   rc_mode[ch],
+                                   snapshot[ch][0],
+                                   use_static_addr[ch],
+                                   meta_enable[ch],
+                                   _heap_size);
+                } else if (preset[ch] == RAW_STREAM_PRESET) {
+                    cameraOpenRaw(videoModule[ch]._p_mmf_context, videoModule[ch]._p_mmf_context->priv,
+                                  channel[ch],
+                                  encoder[ch],
+                                  resolution[ch],
+                                  w[ch],
+                                  h[ch],
+                                  bps[ch],
+                                  fps[ch],
+                                  gop[ch],
+                                  rc_mode[ch]);
+                } else {
                     if (wsviewer_en[ch] == 1) {
                         cameraOpenWSViewer(videoModule[ch]._p_mmf_context, videoModule[ch]._p_mmf_context->priv,
                                            channel[ch],
@@ -806,22 +891,6 @@ void Video::videoInit(int ch)
                                    jpeg_qlevel[ch],
                                    video_rotation[ch]);
                     }
-                } else {
-                    // amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] %s cameraOpenUVCD \n", __FUNCTION__);
-                    cameraOpenUVCD(videoModule[ch]._p_mmf_context,
-                                   channel[ch],
-                                   encoder[ch],
-                                   resolution[ch],
-                                   w[ch],
-                                   h[ch],
-                                   bps[ch],
-                                   fps[ch],
-                                   gop[ch],
-                                   rc_mode[ch],
-                                   snapshot[ch][0],
-                                   use_static_addr[ch],
-                                   meta_enable[ch],
-                                   _heap_size);
                 }
             }
         }
@@ -848,7 +917,11 @@ void Video::channelBegin(int ch)
         case 0:
         case 1:
         case 2: {
-            cameraStart(videoModule[ch]._p_mmf_context->priv, channel[ch]);
+            if ((preset[ch] == RAW_STREAM_PRESET)) {
+                cameraRawStart(videoModule[ch]._p_mmf_context->priv, channel[ch]);
+            } else {
+                cameraStart(videoModule[ch]._p_mmf_context->priv, channel[ch]);
+            }
             if ((encoder[ch] == VIDEO_JPEG) && (snapshot[ch][0] == 0)) {
                 // Enable continuous JPEG capture for MJPEG video
                 cameraSnapshot(videoModule[ch]._p_mmf_context->priv, 2);
@@ -1014,4 +1087,42 @@ void Video::updateVideoParams(int ch)
                        snapshot[ch][0],
                        jpeg_qlevel[ch],
                        video_rotation[ch]);
+}
+
+int Video::getSensorWidth(void)
+{
+    return sensor_params[USE_SENSOR].sensor_width;
+}
+
+int Video::getSensorHeight(void)
+{
+    return sensor_params[USE_SENSOR].sensor_height;
+}
+
+void Video::setDynScaleDown(int ch)
+{
+    dynScaleDown(videoModule[ch]._p_mmf_context);
+}
+
+void Video::setDynScaleUp(int ch)
+{
+    dynScaleUp(videoModule[ch]._p_mmf_context);
+}
+
+void Video::crop_info_update(isp_crop_t* crop_info, int start_x, int start_y, int width, int height)
+{
+    crop_info->start_x = start_x;
+    crop_info->start_y = start_y;
+    crop_info->width = width;
+    crop_info->height = height;
+}
+
+void Video::setROI(int ch, isp_crop_t* crop_info)
+{
+    setDynROI(videoModule[ch]._p_mmf_context, crop_info);
+}
+
+void Video::getROIStat(int ch, int use_roi)
+{
+    ROIStat(videoModule[ch]._p_mmf_context, use_roi);
 }

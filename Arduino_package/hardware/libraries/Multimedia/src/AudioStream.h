@@ -65,6 +65,7 @@ public:
     void configMicNS(uint8_t enable, uint8_t level = 12);
     void configSpkAGC(uint8_t enable, uint8_t dBFS = 6);
     void configSpkNS(uint8_t enable, uint8_t level = 12);
+    void setHPFc(uint8_t fc);
     void begin(void);
     void end(void);
 
@@ -75,6 +76,7 @@ public:
     void muteMic(uint8_t mute);
     void muteSpk(uint8_t mute);
     void printInfo(void);
+    int micLevel(void);
 
 private:
     audio_params_t* _audioParams = NULL;
