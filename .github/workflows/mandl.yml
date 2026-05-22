@@ -3,6 +3,7 @@ name: Arduino Builder Mandl
 on:
   push:
     tags: ["v*"]
+    branches: ["*"]
   workflow_dispatch:
 
 jobs:
