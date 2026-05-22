@@ -21,7 +21,7 @@ jobs:
         id: build
         run: |
           # Variables
-          TAG=$(git describe --tags --abbrev=0)
+          TAG=$(git describe --tags --abbrev=0 --always)
           FILENAME="ameba_pro2_${TAG}.zip"
           # Using absolute paths to prevent "No such file" errors
           JSON_PATH="${{ github.workspace }}/Arduino_package/package_realtek_amebapro2_index.json"
