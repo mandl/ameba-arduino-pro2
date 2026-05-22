@@ -33,12 +33,11 @@ jobs:
           cd "${{ github.workspace }}/Arduino_package"
           zip -r "$RELEASE_DIR/${FILENAME}" hardware/
           cd "${{ github.workspace }}"
-
+          
           # Metadata
           SHA=$(sha256sum "$RELEASE_DIR/${FILENAME}" | awk '{print $1}')
           SIZE=$(stat -c%s "$RELEASE_DIR/${FILENAME}")
           URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/${FILENAME}"
-
           echo "::notice title=Toolchain Hash::$SHA"
           echo "::notice title=Toolchain Size::$SIZE"
           
@@ -49,10 +48,10 @@ jobs:
             {"packager": "realtek", "name": "ameba_pro2_tools", "version": "1.4.7"},
             {"packager": "realtek", "name": "ameba_pro2_nn_models", "version": "1.0.3"}
           ]'
-
           
           tmp=$(mktemp)
           
+          # FIXED JQ SYNTAX TO PRESERVE ARDUINO JSON FORMAT
           jq --arg ver "$TAG" \
              --arg size "$SIZE" \
              --arg sha "$SHA" \
@@ -60,8 +59,7 @@ jobs:
              --arg url "$URL" \
              --argjson tools "$TOOLS_DATA" \
             '(.packages[] | select(.name == "realtek")).platforms |= (
-              # 1. Define the new platform object
-              [{
+              [ {
                 "name": "Ameba Pro2 Boards",
                 "architecture": "AmebaPro2",
                 "version": $ver,
@@ -75,17 +73,13 @@ jobs:
                   {"name": "AMB82-MINI (RTL8735B)"}
                 ],
                 "toolsDependencies": $tools
-              }] 
+              } ] 
               + 
-              # 2. Add the rest of the list, but REMOVE any old entry with the same version
-              [ .[] | select(.version != $ver) ]
+              [ .[]? | select(.version != $ver) ]
             )' "$JSON_PATH" > "$tmp" && mv "$tmp" "$JSON_PATH"
-
-
           
           # Copy updated JSON to release folder for upload
           cp "$JSON_PATH" "$RELEASE_DIR/"
-
           # Outputs
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "zip_path=$RELEASE_DIR/${FILENAME}" >> $GITHUB_OUTPUT
@@ -102,6 +96,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.build.outputs.tag }}
+          target_commitish: ${{ github.sha }} # Links the release to this branch's commit
           files: |
             ${{ steps.build.outputs.zip_path }}
             ${{ steps.build.outputs.json_asset }}
