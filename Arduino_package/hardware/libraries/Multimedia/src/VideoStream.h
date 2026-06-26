@@ -149,7 +149,7 @@ public:
     void setExposureTime(int time);
     void getExposureTime(void);
     void setAEGain(int value);
-    void getAEGain(void);
+    int getAEGain(void);
     void setPowerLineFreq(int enable);
     void getPowerLineFreq(void);
     void setAWB(int enable);
