@@ -28,6 +28,9 @@ extern "C" {
 #include "ard_socket.h"
 
 extern struct netif xnetif[NET_IF_NUM];
+// extern rtw_mode_t wifi_mode;
+// extern struct static_ip_config user_static_ip;
+
 #ifdef __cplusplus
 }
 #endif
@@ -39,9 +42,10 @@ int32_t WiFiDrv::_networkRssi[WL_NETWORKS_LIST_MAXNUM] = {0};
 uint32_t WiFiDrv::_networkEncr[WL_NETWORKS_LIST_MAXNUM] = {0};
 
 static bool init_wlan = false;
-// static int wifi_mode = NULL;
-rtw_mode_t wifi_mode = RTW_MODE_STA;
-struct static_ip_config user_static_ip;
+// rtw_mode_t wifi_mode = RTW_MODE_STA;
+// struct static_ip_config user_static_ip;
+__attribute__((weak)) rtw_mode_t wifi_mode = RTW_MODE_STA;
+__attribute__((weak)) struct static_ip_config user_static_ip;
 
 static rtw_network_info_t wifi;
 static rtw_softap_info_t ap = {0};
@@ -767,6 +771,11 @@ const char* WiFiDrv::getHostname()
         snprintf(_hostname, HOSTNAME_LEN, "%s%02X%02X%02X", "Ameba_", eth_mac[3], eth_mac[4], eth_mac[5]);
     }
     return (const char*)_hostname;
+}
+
+void WiFiDrv::configureWiFiAutoReconnect(int mode, int count, int interval)
+{
+    wifi_config_autoreconnect(mode, count, interval);
 }
 
 WiFiDrv wiFiDrv;

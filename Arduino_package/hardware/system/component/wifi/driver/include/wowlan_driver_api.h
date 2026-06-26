@@ -62,6 +62,7 @@ extern "C" {
 #define RX_ICMP_REPLY                   0x80
 #define ICMP_MAX_SEND                   0x81
 #define MQTT_FW_RX_TCP_PKT_WAKEUP       0x84
+#define RX_WPA3_11V_PKT                 0x82
 
 //wlan lib wowlan api
 
@@ -214,10 +215,10 @@ int rtw_hal_wlan_resume_check(void);
 //return@
 //1 for success, 0 for fail
 int rtw_hal_read_aoac_rpt_from_txfifo(u8 *buf, u16 addr, u16 len);
-//read DHCP T1 time when wakeup
+//read DHCP lease used time when wakeup
 //return@
-//DHCP T1 time
-uint16_t rtw_hal_read_wowlan_t1_time(void);
+//DHCP lease used time
+uint16_t rtw_hal_read_wowlan_lease_used(void);
 //Resume Wi-Fi connection status based on saved data
 //return@
 //1 for success, 0 for fail
@@ -244,6 +245,10 @@ void wifi_wowlan_set_pstune_param(uint8_t set_pstimeout, uint8_t set_pstimeout_r
 ////0 for success
 int wifi_wowlan_set_fwdecision_param(u8  fwdis_period, u8  fwdis_trypktnum, u8  pno_enable, u8  pno_timeout, u8  l2_keepalive_period);
 
+//select wowlan arp taget ip
+//param@
+//u8  use_type                  0 for dhcp server ip, 1 for gateway ip
+void wowlan_set_arp_target_ip(uint8_t use_type);
 
 #ifdef	__cplusplus
 }

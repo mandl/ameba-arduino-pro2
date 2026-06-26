@@ -19,6 +19,7 @@
 #define MAX_SW_BUFFER 5
 #define MAX_VERIFY_NUM 32
 
+#define ISP_DEBUG_INFO_LEN 36
 //#define RTS_VIDEOIN_HEIGHT_ALIGN	16
 
 typedef struct hal_isp_buffer {
@@ -299,6 +300,9 @@ typedef struct {
 
 	uint32_t wdr_hist_contrast;
 	uint32_t wdr_hist_contrast_origin;
+
+	uint8_t ae_algo_dbg_buf[ISP_DEBUG_INFO_LEN];
+
 	uint32_t reserved;
 
 } isp_statis_meta_t;
@@ -434,6 +438,10 @@ struct verify_ctrl_config {
 #define RTSV_AE_MAX_FPS           0xF022
 #define RTSV_SENSOR_SHORT_EXP_THD 0xF023
 #define RTSV_DYNAMIC_IQ_MODE	  0xF024
+#define RTSV_SENSOR_ISP_GAIN      0xF025
+#define RTSV_DRC_MODE             0xF026
+#define RTSV_DRC_BLENDING_RATE    0xF027
+#define RTSV_SENSOR_ISP_GAIN_MODE 0xF028
 
 // ISP_ZOOM_FILTER_COEF_NUM+ISP_ZOOM_FILTER_COEF_ALIGNMENT_DUMMY=32
 #define ISP_ZOOM_FILTER_COEF_NUM  20
