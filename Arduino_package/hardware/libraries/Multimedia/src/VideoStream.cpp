@@ -216,6 +216,7 @@ int CameraSetting::getAEGain(void)
 {
     isp_get_ae_gain(&ret);
     amb_ard_printf(ARD_LOG_INF, "\r\n[INFO] AE Gain = %d\n", ret);
+    
     return ret;
 }
 
